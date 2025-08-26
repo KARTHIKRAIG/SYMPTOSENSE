@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYMPTOSENSE - Architecture Diagrams</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1, h2 {
+            color: #00bcd4;
+            text-align: center;
+        }
+        .diagram-container {
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0, 188, 212, 0.3);
+        }
+        .download-btn {
+            background-color: #00bcd4;
+            color: #000;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-weight: bold;
+        }
+        .download-btn:hover {
+            background-color: #0097a7;
+        }
+        .mermaid {
+            text-align: center;
+            background-color: white;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .description {
+            background-color: #2c2c2c;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #00bcd4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SYMPTOSENSE - System Architecture Diagrams</h1>
+        
+        <div class="description">
+            <h3>📥 How to Download Diagrams</h3>
+            <p>1. Right-click on any diagram below</p>
+            <p>2. Select "Save image as..." or "Copy image"</p>
+            <p>3. Save to your desired location</p>
+            <p><strong>Alternative:</strong> Visit <a href="https://mermaid.live/" target="_blank" style="color: #00bcd4;">mermaid.live</a> and paste the code from ARCHITECTURE_DIAGRAMS.md</p>
+        </div>
+
+        <div class="diagram-container">
+            <h2>🏗️ Complete System Architecture</h2>
+            <div class="description">
+                <p>This diagram shows the complete system architecture with all layers and components of SYMPTOSENSE.</p>
+            </div>
+            <div class="mermaid">
+graph TB
+    subgraph "User Interface Layer"
+        UI1[Web Browser]
+        UI2[Speech Recognition API]
+        UI3[Responsive UI<br/>Bootstrap 5.3<br/>Dark Theme]
+    end
+    
+    subgraph "Input Processing Layer"
+        IP1[Text Input Handler]
+        IP2[Speech-to-Text Converter]
+        IP3[Symptom Parser]
+        IP4[Autocorrect Engine<br/>85% Success Rate]
+        IP5[Input Validation]
+    end
+    
+    subgraph "Core Application Layer"
+        CA1[Flask Web Framework]
+        CA2[Route Handlers<br/>/, /predict, /about, /contact]
+        CA3[Session Management]
+        CA4[Error Handling]
+    end
+    
+    subgraph "Machine Learning Engine"
+        ML1[Feature Vector Creator<br/>132 Dimensions]
+        ML2[Random Forest Model<br/>100 Estimators<br/>95.12% Accuracy]
+        ML3[Disease Classifier<br/>41 Classes]
+        ML4[Prediction Confidence]
+    end
+    
+    subgraph "Recommendation System"
+        RS1[Disease Lookup Engine]
+        RS2[Medication Recommender]
+        RS3[Diet Planner]
+        RS4[Workout Advisor]
+        RS5[Precaution Generator]
+        RS6[Description Provider]
+    end
+    
+    subgraph "Data Storage Layer"
+        DS1[(Training Dataset<br/>4,920 Samples)]
+        DS2[(Symptoms Database<br/>132 Parameters)]
+        DS3[(Disease Information<br/>41 Conditions)]
+        DS4[(Medications DB)]
+        DS5[(Diets DB)]
+        DS6[(Workouts DB)]
+        DS7[(Precautions DB)]
+        DS8[(PostgreSQL<br/>Optional)]
+    end
+    
+    UI1 --> IP1
+    UI2 --> IP2
+    IP1 --> IP3
+    IP2 --> IP3
+    IP3 --> IP4
+    IP4 --> IP5
+    IP5 --> CA1
+    CA1 --> CA2
+    CA2 --> ML1
+    ML1 --> ML2
+    ML2 --> ML3
+    ML3 --> RS1
+    RS1 --> RS2
+    RS1 --> RS3
+    RS1 --> RS4
+    RS1 --> RS5
+    RS1 --> RS6
+    
+    style ML2 fill:#00bcd4,stroke:#fff,stroke-width:3px,color:#000
+    style UI3 fill:#4CAF50,stroke:#fff,stroke-width:2px,color:#000
+    style RS1 fill:#FF9800,stroke:#fff,stroke-width:2px,color:#000
+            </div>
+        </div>
+
+        <div class="diagram-container">
+            <h2>🔄 User Data Flow</h2>
+            <div class="description">
+                <p>This flowchart shows the complete user journey from symptom input to receiving recommendations.</p>
+            </div>
+            <div class="mermaid">
+flowchart TD
+    A[👤 User Visits Website] --> B{Input Method?}
+    
+    B -->|Text| C[📝 Type Symptoms<br/>e.g. 'itching, cough, fever']
+    B -->|Voice| D[🎤 Speech Recognition<br/>Web Speech API]
+    
+    C --> E[🔧 Symptom Processing]
+    D --> E
+    
+    E --> F[✅ Input Validation<br/>& Autocorrect]
+    F --> G{Valid Symptoms?}
+    
+    G -->|No| H[❌ Error Message<br/>'Please enter valid symptoms']
+    G -->|Yes| I[🧮 Feature Vector Creation<br/>132-dimensional binary array]
+    
+    I --> J[🤖 Random Forest Model<br/>95.12% Accuracy<br/>100 Decision Trees]
+    
+    J --> K[🎯 Disease Prediction<br/>41 Possible Conditions]
+    
+    K --> L[📊 Recommendation Engine]
+    
+    L --> M[💊 Medications]
+    L --> N[🥗 Diet Plans]
+    L --> O[🏃‍♂️ Workouts]
+    L --> P[⚠️ Precautions]
+    L --> Q[📖 Disease Info]
+    
+    M --> R[📱 Results Display<br/>Modal Interface]
+    N --> R
+    O --> R
+    P --> R
+    Q --> R
+    
+    R --> S[👨‍⚕️ User Reviews Results]
+    S --> T{Satisfied?}
+    
+    T -->|No| U[🔄 Try Different Symptoms]
+    T -->|Yes| V[📞 Contact Form<br/>Optional Feedback]
+    
+    U --> B
+    V --> W[📧 Email Notification<br/>Auto-Response]
+    
+    H --> B
+    
+    style J fill:#00bcd4,stroke:#fff,stroke-width:3px,color:#000
+    style K fill:#4CAF50,stroke:#fff,stroke-width:2px,color:#000
+    style R fill:#FF9800,stroke:#fff,stroke-width:2px,color:#000
+    style A fill:#9C27B0,stroke:#fff,stroke-width:2px,color:#fff
+            </div>
+        </div>
+
+        <div class="diagram-container">
+            <h2>📊 Performance Metrics</h2>
+            <div class="description">
+                <p>Visual representation of SYMPTOSENSE performance metrics and system capabilities.</p>
+            </div>
+            <div class="mermaid">
+graph LR
+    subgraph "Model Performance"
+        A[Accuracy<br/>95.12%] 
+        B[Precision<br/>95.49%]
+        C[Recall<br/>95.12%]
+        D[F1 Score<br/>94.08%]
+    end
+    
+    subgraph "Dataset Statistics"
+        E[Training Samples<br/>4,920]
+        F[Test Samples<br/>1,476]
+        G[Symptom Features<br/>132]
+        H[Disease Classes<br/>41]
+    end
+    
+    subgraph "System Capabilities"
+        I[Response Time<br/>&lt;200ms]
+        J[Speech Recognition<br/>90% accuracy]
+        K[Symptom Autocorrect<br/>85% success]
+        L[Disease Coverage<br/>41 conditions]
+    end
+    
+    subgraph "User Experience"
+        M[Modern UI<br/>Dark Theme]
+        N[Responsive Design<br/>Bootstrap 5.3]
+        O[Modal System<br/>Organized Info]
+        P[Multi-Input<br/>Text + Voice]
+    end
+    
+    style A fill:#4CAF50,stroke:#fff,stroke-width:2px,color:#000
+    style B fill:#4CAF50,stroke:#fff,stroke-width:2px,color:#000
+    style C fill:#4CAF50,stroke:#fff,stroke-width:2px,color:#000
+    style D fill:#4CAF50,stroke:#fff,stroke-width:2px,color:#000
+    style I fill:#00bcd4,stroke:#fff,stroke-width:2px,color:#000
+    style J fill:#00bcd4,stroke:#fff,stroke-width:2px,color:#000
+    style K fill:#00bcd4,stroke:#fff,stroke-width:2px,color:#000
+    style L fill:#00bcd4,stroke:#fff,stroke-width:2px,color:#000
+            </div>
+        </div>
+
+        <div class="description">
+            <h3>📚 Additional Resources</h3>
+            <p><strong>Documentation Files Created:</strong></p>
+            <ul>
+                <li><strong>README.md</strong> - Complete project documentation</li>
+                <li><strong>TECHNICAL_ANALYSIS.md</strong> - Detailed technical analysis</li>
+                <li><strong>RESULTS_PRESENTATION.md</strong> - Performance results and analysis</li>
+                <li><strong>PROJECT_SUMMARY.md</strong> - Executive summary</li>
+                <li><strong>PRESENTATION_SLIDES.md</strong> - Presentation format</li>
+                <li><strong>ARCHITECTURE_DIAGRAMS.md</strong> - All diagram codes</li>
+            </ul>
+            
+            <h3>🔗 Useful Links</h3>
+            <ul>
+                <li><a href="https://mermaid.live/" target="_blank" style="color: #00bcd4;">Mermaid Live Editor</a> - Create and export diagrams</li>
+                <li><a href="https://github.com/KARTHIKRAIG/SYMPTOSENSE" target="_blank" style="color: #00bcd4;">GitHub Repository</a> - Project source code</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            themeVariables: {
+                primaryColor: '#00bcd4',
+                primaryTextColor: '#000',
+                primaryBorderColor: '#fff',
+                lineColor: '#333',
+                secondaryColor: '#4CAF50',
+                tertiaryColor: '#FF9800'
+            }
+        });
+    </script>
+</body>
+</html>
