@@ -12,15 +12,15 @@ import difflib
 app = Flask(__name__)
 
 # Load datasets
-sym_des = pd.read_csv(r"C:\Medication Recommendation System\Medication Recommendation System\Datasets\symtoms_df.csv")
-precautions = pd.read_csv(r"C:\Medication Recommendation System\Medication Recommendation System\Datasets\precautions_df.csv")
-workout = pd.read_csv(r"C:\Medication Recommendation System\Medication Recommendation System\Datasets\workout_df.csv")
-description = pd.read_csv(r"C:\Medication Recommendation System\Medication Recommendation System\Datasets\description.csv")
-medications = pd.read_csv(r'C:\Medication Recommendation System\Medication Recommendation System\Datasets\medications.csv')
-diets = pd.read_csv(r"C:\Medication Recommendation System\Medication Recommendation System\Datasets\diets.csv")
+sym_des = pd.read_csv("Datasets/symtoms_df.csv")
+precautions = pd.read_csv("Datasets/precautions_df.csv")
+workout = pd.read_csv("Datasets/workout_df.csv")
+description = pd.read_csv("Datasets/description.csv")
+medications = pd.read_csv('Datasets/medications.csv')
+diets = pd.read_csv("Datasets/diets.csv")
 
 # Load model
-rf = pickle.load(open(r"C:\Medication Recommendation System\Medication Recommendation System\models\model.pkl", 'rb'))
+rf = pickle.load(open("models/model.pkl", 'rb'))
 
 # Email Response Function
 def send_email_response(to_email, user_name):
