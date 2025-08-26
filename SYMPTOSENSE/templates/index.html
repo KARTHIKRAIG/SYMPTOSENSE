@@ -127,15 +127,8 @@
             <label for="symptoms" class="form-label">Enter Symptoms</label>
             <input type="text" class="form-control" id="symptoms" name="symptoms" placeholder="e.g. itching, coughing, aching">
           </div>
-          <div class="speech-controls mb-3">
-            <button type="button" id="startSpeechRecognition" class="btn btn-primary btn-sm-custom me-2">🎤 Start Speech</button>
-            <button type="button" id="stopSpeechRecognition" class="btn btn-secondary btn-sm-custom" style="display: none;">🛑 Stop Speech</button>
-            <span id="speechStatus" class="ms-2 text-muted"></span>
-          </div>
-          <div id="transcription" class="mb-3 p-2 bg-light rounded" style="min-height: 40px; display: none;">
-            <small class="text-muted">Transcription will appear here...</small>
-            <div id="transcriptionText"></div>
-          </div>
+          <button type="button" id="startSpeechRecognition" class="btn btn-primary btn-sm-custom mb-3">🎤 Start Speech Recognition</button>
+          <div id="transcription" class="mb-3"></div>
           {% if message %}<p>{{ message }}</p>{% endif %}
           <button type="submit" class="btn btn-danger btn-sm-custom w-auto">Predict</button>
         </form>
@@ -186,205 +179,183 @@
     {% endfor %}
 
     <script>
-      // Enhanced Speech Recognition System
-      class SpeechRecognitionHandler {
-        constructor() {
-          this.recognition = null;
-          this.isListening = false;
-          this.finalTranscript = '';
+      // Simple and reliable speech recognition
+      const startSpeechRecognitionButton = document.getElementById('startSpeechRecognition');
+      const transcriptionDiv = document.getElementById('transcription');
+      const symptomsInput = document.getElementById('symptoms');
 
-          // Get DOM elements
-          this.startButton = document.getElementById('startSpeechRecognition');
-          this.stopButton = document.getElementById('stopSpeechRecognition');
-          this.statusSpan = document.getElementById('speechStatus');
-          this.transcriptionDiv = document.getElementById('transcription');
-          this.transcriptionText = document.getElementById('transcriptionText');
-          this.symptomsInput = document.getElementById('symptoms');
-
-          this.initializeSpeechRecognition();
-          this.bindEvents();
-        }
-
-        initializeSpeechRecognition() {
-          // Check for browser support
-          if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-            this.showError('Speech recognition not supported in this browser. Please use Chrome, Edge, or Safari.');
-            this.startButton.disabled = true;
-            return;
-          }
-
-          // Initialize speech recognition
+      // Check if speech recognition is supported
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        startSpeechRecognitionButton.addEventListener('click', function() {
+          // Create speech recognition object
           const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-          this.recognition = new SpeechRecognition();
+          const recognition = new SpeechRecognition();
 
-          // Configure recognition settings
-          this.recognition.continuous = true;
-          this.recognition.interimResults = true;
-          this.recognition.lang = 'en-US';
-          this.recognition.maxAlternatives = 1;
+          // Configure recognition
+          recognition.lang = 'en-US';
+          recognition.continuous = false;
+          recognition.interimResults = true;  // Enable interim results
+          recognition.maxAlternatives = 1;
 
-          // Set up event handlers
-          this.recognition.onstart = () => this.onStart();
-          this.recognition.onresult = (event) => this.onResult(event);
-          this.recognition.onerror = (event) => this.onError(event);
-          this.recognition.onend = () => this.onEnd();
-        }
+          console.log('Speech recognition configured:', {
+            lang: recognition.lang,
+            continuous: recognition.continuous,
+            interimResults: recognition.interimResults
+          });
 
-        bindEvents() {
-          this.startButton.addEventListener('click', () => this.startListening());
-          this.stopButton.addEventListener('click', () => this.stopListening());
-        }
+          // Update button state
+          startSpeechRecognitionButton.textContent = '🎤 Listening...';
+          startSpeechRecognitionButton.disabled = true;
+          startSpeechRecognitionButton.classList.remove('btn-primary');
+          startSpeechRecognitionButton.classList.add('btn-success');
 
-        startListening() {
-          if (!this.recognition) {
-            this.showError('Speech recognition not available');
-            return;
-          }
+          // Handle successful recognition
+          recognition.onresult = function(event) {
+            console.log('Speech recognition result received:', event);
 
-          try {
-            this.finalTranscript = '';
-            this.recognition.start();
-          } catch (error) {
-            this.showError('Error starting speech recognition: ' + error.message);
-          }
-        }
-
-        stopListening() {
-          if (this.recognition && this.isListening) {
-            this.recognition.stop();
-          }
-        }
-
-        onStart() {
-          this.isListening = true;
-          this.startButton.style.display = 'none';
-          this.stopButton.style.display = 'inline-block';
-          this.transcriptionDiv.style.display = 'block';
-          this.statusSpan.textContent = '🎤 Listening...';
-          this.statusSpan.className = 'ms-2 text-success';
-        }
-
-        onResult(event) {
-          let interimTranscript = '';
-
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            const transcript = event.results[i][0].transcript;
-
-            if (event.results[i].isFinal) {
-              this.finalTranscript += transcript + ' ';
-            } else {
-              interimTranscript += transcript;
-            }
-          }
-
-          // Update transcription display
-          const fullTranscript = this.finalTranscript + interimTranscript;
-          this.transcriptionText.innerHTML = `
-            <strong>Final:</strong> ${this.finalTranscript}<br>
-            <em>Interim:</em> ${interimTranscript}
-          `;
-
-          // Update symptoms input field
-          if (this.finalTranscript.trim()) {
-            this.symptomsInput.value = this.finalTranscript.trim();
-          }
-        }
-
-        onError(event) {
-          let errorMessage = 'Speech recognition error: ';
-
-          switch(event.error) {
-            case 'no-speech':
-              errorMessage += 'No speech detected. Please try again.';
-              break;
-            case 'audio-capture':
-              errorMessage += 'No microphone found. Please check your microphone.';
-              break;
-            case 'not-allowed':
-              errorMessage += 'Microphone permission denied. Please allow microphone access.';
-              break;
-            case 'network':
-              errorMessage += 'Network error. Please check your internet connection.';
-              break;
-            default:
-              errorMessage += event.error;
-          }
-
-          this.showError(errorMessage);
-          this.resetUI();
-        }
-
-        onEnd() {
-          this.isListening = false;
-          this.resetUI();
-
-          if (this.finalTranscript.trim()) {
-            this.statusSpan.textContent = '✅ Speech captured successfully!';
-            this.statusSpan.className = 'ms-2 text-success';
-
-            // Auto-focus on predict button
-            setTimeout(() => {
-              const predictButton = document.querySelector('button[type="submit"]');
-              if (predictButton) {
-                predictButton.focus();
-                predictButton.classList.add('btn-pulse');
-                setTimeout(() => predictButton.classList.remove('btn-pulse'), 2000);
+            // Get the transcript from the results
+            let transcript = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+              if (event.results[i].isFinal) {
+                transcript += event.results[i][0].transcript;
               }
-            }, 500);
-          } else {
-            this.statusSpan.textContent = '⚠️ No speech detected';
-            this.statusSpan.className = 'ms-2 text-warning';
+            }
+
+            // If no final result, get the latest result
+            if (!transcript && event.results.length > 0) {
+              transcript = event.results[event.results.length - 1][0].transcript;
+            }
+
+            console.log('Extracted transcript:', transcript);
+
+            if (transcript.trim()) {
+              // Display transcription
+              transcriptionDiv.innerHTML = `
+                <div class="alert alert-success" role="alert">
+                  <strong>🎤 Speech captured:</strong> ${transcript}
+                </div>
+              `;
+
+              // Fill the symptoms input
+              symptomsInput.value = transcript.trim();
+
+              // Reset button
+              resetButton('✅ Speech Recognition Complete');
+            } else {
+              // No transcript captured
+              transcriptionDiv.innerHTML = `
+                <div class="alert alert-warning" role="alert">
+                  <strong>⚠️ No speech detected:</strong> Please try speaking again.
+                </div>
+              `;
+              resetButton('🎤 Start Speech Recognition');
+            }
+          };
+
+          // Handle errors
+          recognition.onerror = function(event) {
+            let errorMessage = 'Speech recognition error';
+
+            switch(event.error) {
+              case 'no-speech':
+                errorMessage = 'No speech detected. Please try again.';
+                break;
+              case 'audio-capture':
+                errorMessage = 'Microphone not found. Please check your microphone.';
+                break;
+              case 'not-allowed':
+                errorMessage = 'Microphone permission denied. Please allow microphone access and try again.';
+                break;
+              case 'network':
+                errorMessage = 'Network error. Please check your internet connection.';
+                break;
+              default:
+                errorMessage = `Speech recognition error: ${event.error}`;
+            }
+
+            // Display error
+            transcriptionDiv.innerHTML = `
+              <div class="alert alert-danger" role="alert">
+                <strong>❌ Error:</strong> ${errorMessage}
+              </div>
+            `;
+
+            // Reset button
+            resetButton('🎤 Start Speech Recognition');
+          };
+
+          // Handle recognition end
+          recognition.onend = function() {
+            console.log('Speech recognition ended');
+
+            // Reset button if not already reset
+            if (startSpeechRecognitionButton.disabled) {
+              // Check if we got any results
+              if (!symptomsInput.value.trim()) {
+                transcriptionDiv.innerHTML = `
+                  <div class="alert alert-warning" role="alert">
+                    <strong>⚠️ No speech detected:</strong> Please try again and speak clearly.
+                  </div>
+                `;
+              }
+              resetButton('🎤 Start Speech Recognition');
+            }
+          };
+
+          // Add start event handler
+          recognition.onstart = function() {
+            console.log('Speech recognition started');
+            transcriptionDiv.innerHTML = `
+              <div class="alert alert-info" role="alert">
+                <strong>🎤 Listening...</strong> Please speak now.
+              </div>
+            `;
+          };
+
+          // Start recognition
+          try {
+            console.log('Starting speech recognition...');
+            recognition.start();
+          } catch (error) {
+            console.error('Error starting recognition:', error);
+            transcriptionDiv.innerHTML = `
+              <div class="alert alert-danger" role="alert">
+                <strong>❌ Error:</strong> Could not start speech recognition. ${error.message}
+              </div>
+            `;
+            resetButton('🎤 Start Speech Recognition');
+          }
+        });
+
+        // Function to reset button state
+        function resetButton(text) {
+          startSpeechRecognitionButton.textContent = text;
+          startSpeechRecognitionButton.disabled = false;
+          startSpeechRecognitionButton.classList.remove('btn-success');
+          startSpeechRecognitionButton.classList.add('btn-primary');
+
+          // Reset to original text after 3 seconds if it's a success message
+          if (text.includes('✅')) {
+            setTimeout(() => {
+              startSpeechRecognitionButton.textContent = '🎤 Start Speech Recognition';
+            }, 3000);
           }
         }
 
-        resetUI() {
-          this.startButton.style.display = 'inline-block';
-          this.stopButton.style.display = 'none';
-        }
+      } else {
+        // Speech recognition not supported
+        startSpeechRecognitionButton.disabled = true;
+        startSpeechRecognitionButton.textContent = '❌ Speech Not Supported';
+        startSpeechRecognitionButton.classList.remove('btn-primary');
+        startSpeechRecognitionButton.classList.add('btn-secondary');
 
-        showError(message) {
-          this.statusSpan.textContent = '❌ ' + message;
-          this.statusSpan.className = 'ms-2 text-danger';
-          console.error('Speech Recognition Error:', message);
-        }
+        transcriptionDiv.innerHTML = `
+          <div class="alert alert-warning" role="alert">
+            <strong>⚠️ Speech recognition not supported</strong><br>
+            Please use Chrome, Edge, or Safari browser for speech recognition functionality.
+          </div>
+        `;
       }
-
-      // Initialize speech recognition when page loads
-      document.addEventListener('DOMContentLoaded', function() {
-        new SpeechRecognitionHandler();
-      });
-
-      // Add CSS for button pulse effect
-      const style = document.createElement('style');
-      style.textContent = `
-        .btn-pulse {
-          animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.05); }
-          100% { transform: scale(1); }
-        }
-
-        .speech-controls {
-          display: flex;
-          align-items: center;
-          flex-wrap: wrap;
-        }
-
-        #transcription {
-          border: 1px solid #dee2e6;
-          background-color: #f8f9fa !important;
-        }
-
-        #transcriptionText {
-          font-family: monospace;
-          font-size: 0.9em;
-          line-height: 1.4;
-        }
-      `;
-      document.head.appendChild(style);
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
   </body>

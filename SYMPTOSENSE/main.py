@@ -106,33 +106,69 @@ def home():
     if request.method == 'POST':
         symptoms = request.form.get('symptoms')
         print(f"Raw input symptoms: {symptoms}")
-        if symptoms == "Symptoms" or not symptoms.strip():
+
+        if symptoms == "Symptoms" or not symptoms or not symptoms.strip():
             message = "Please enter valid symptoms."
             return render_template('index.html', message=message)
         else:
             # Parse symptoms from input string
             raw_symptoms = [s.strip("[]' ").lower() for s in symptoms.split(',')]
+            print(f"Parsed raw symptoms: {raw_symptoms}")
+
             symptom_keys = list(symptoms_dict.keys())
             user_symptoms = []
+            unrecognized_symptoms = []
 
             for symptom in raw_symptoms:
+                if not symptom.strip():  # Skip empty symptoms
+                    continue
+
                 clean_symptom = clean_symptom_key(symptom)
-                corrected = autocorrect_symptom(clean_symptom, symptom_keys)
-                if corrected:
-                    user_symptoms.append(corrected)
+                print(f"Processing symptom: '{symptom}' -> cleaned: '{clean_symptom}'")
+
+                # First try exact match
+                if clean_symptom in symptoms_dict:
+                    user_symptoms.append(clean_symptom)
+                    print(f"Exact match found: {clean_symptom}")
                 else:
-                    print(f"Warning: Symptom '{symptom}' not recognized and ignored.")
+                    # Try autocorrect
+                    corrected = autocorrect_symptom(clean_symptom, symptom_keys)
+                    if corrected:
+                        user_symptoms.append(corrected)
+                        print(f"Autocorrected: '{clean_symptom}' -> '{corrected}'")
+                    else:
+                        unrecognized_symptoms.append(symptom)
+                        print(f"Warning: Symptom '{symptom}' not recognized and ignored.")
+
+            print(f"Final user symptoms: {user_symptoms}")
+            print(f"Unrecognized symptoms: {unrecognized_symptoms}")
 
             if not user_symptoms:
-                message = "No valid symptoms found after autocorrect. Please try again."
+                message = f"No valid symptoms found. Unrecognized: {', '.join(unrecognized_symptoms)}. Please try symptoms like: itching, fever, cough, headache, nausea."
                 return render_template('index.html', message=message)
 
-            predicted_disease = get_predicted_value(user_symptoms)
-            dis_des, precautions_list, medications, rec_diet, workout = helper(predicted_disease)
-            my_precautions = [i for i in precautions_list[0]]
-            return render_template('index.html', predicted_disease=predicted_disease, dis_des=dis_des,
-                                   my_precautions=my_precautions, medications=medications,
-                                   my_diet=rec_diet, workout=workout)
+            try:
+                predicted_disease = get_predicted_value(user_symptoms)
+                print(f"Predicted disease: {predicted_disease}")
+
+                dis_des, precautions_list, medications, rec_diet, workout = helper(predicted_disease)
+                my_precautions = [i for i in precautions_list[0]]
+
+                print(f"Disease description: {dis_des}")
+                print(f"Precautions: {my_precautions}")
+                print(f"Medications: {medications}")
+
+                return render_template('index.html',
+                                     predicted_disease=predicted_disease,
+                                     dis_des=dis_des,
+                                     my_precautions=my_precautions,
+                                     medications=medications,
+                                     my_diet=rec_diet,
+                                     workout=workout)
+            except Exception as e:
+                print(f"Error in prediction: {e}")
+                message = f"Error in prediction: {str(e)}. Please try again."
+                return render_template('index.html', message=message)
     return render_template('index.html')
 
 @app.route('/about')
